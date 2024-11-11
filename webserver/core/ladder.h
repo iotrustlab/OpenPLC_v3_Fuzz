@@ -143,14 +143,14 @@ extern time_t start_time;
 extern time_t end_time;
 
 //modbus.cpp
-int processModbusMessage(unsigned char *buffer, int bufferSize);
+int processModbusMessage(unsigned char *buffer, uint16_t bufferSize);
 void mapUnusedIO();
 
 //enip.cpp
-int processEnipMessage(unsigned char *buffer, int buffer_size);
+int processEnipMessage(unsigned char *buffer, uint16_t buffer_size);
 
 //pccc.cpp ADDED Ulmer
-uint16_t processPCCCMessage(unsigned char *buffer, int buffer_size);
+uint16_t processPCCCMessage(unsigned char *buffer, uint16_t buffer_size);
 
 //modbus_master.cpp
 void initializeMB();

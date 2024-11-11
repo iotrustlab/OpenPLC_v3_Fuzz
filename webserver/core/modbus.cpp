@@ -1057,7 +1057,7 @@ void debugGetMd5(unsigned char *mb_frame, void *endianness)
 // response for it. The return value is the size of the response message in
 // bytes.
 //-----------------------------------------------------------------------------
-int processModbusMessage(unsigned char *buffer, int bufferSize)
+int processModbusMessage(unsigned char *buffer, uint16_t bufferSize)
 {
     MessageLength = 0;
     uint16_t field1 = (uint16_t)buffer[8] << 8 | (uint16_t)buffer[9];

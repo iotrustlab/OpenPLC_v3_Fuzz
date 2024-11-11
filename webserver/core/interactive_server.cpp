@@ -34,6 +34,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <time.h>
+#include <iostream>
 
 #include "ladder.h"
 #define BUFFER_SIZE 1024
@@ -49,7 +50,7 @@ bool run_enip = 0;
 uint16_t enip_port = 44818;
 bool run_pstorage = 0;
 uint16_t pstorage_polling = 10;
-unsigned char server_command[1024];
+char server_command[1024];
 int command_index = 0;
 bool processing_command = 0;
 time_t start_time;
@@ -102,7 +103,7 @@ void *pstorageThread(void *arg)
 //-----------------------------------------------------------------------------
 // Read the argument from a command function
 //-----------------------------------------------------------------------------
-int readCommandArgument(unsigned char *command)
+int readCommandArgument(char *command)
 {
     int i = 0;
     int j = 0;
@@ -118,17 +119,17 @@ int readCommandArgument(unsigned char *command)
         argument[j] = '\0';
     }
     
-    return atoi(argument);
+    return atoi((const char*)argument);
 }
 //-----------------------------------------------------------------------------
 // Read string argument from a command function
 //-----------------------------------------------------------------------------
-unsigned char *readCommandArgumentStr(unsigned char *command)
+char *readCommandArgumentStr(char *command)
 {
     int i = 0;
     int j = 0;
-    unsigned char *argument;
-    argument = (unsigned char *)malloc(1024 * sizeof(unsigned char));
+    char *argument;
+    argument = (char *)malloc(1024 * sizeof(char));
     
     while (command[i] != '(' && command[i] != '\0') i++;
     if (command[i] == '(') i++;
@@ -174,6 +175,7 @@ int createSocket_interactive(int port)
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_addr.sin_port = htons(port);
+    std::cout << socket_fd;
 
     //Bind socket
     if (bind(socket_fd,(struct sockaddr *)&server_addr,sizeof(server_addr)) < 0)
@@ -222,7 +224,7 @@ int waitForClient_interactive(int socket_fd)
 // Once the message is received, it is stored on the buffer and the function
 // returns the number of bytes received.
 //-----------------------------------------------------------------------------
-int listenToClient_interactive(int client_fd, unsigned char *buffer)
+int listenToClient_interactive(int client_fd, char *buffer)
 {
     bzero(buffer, 1024);
     int n = read(client_fd, buffer, 1024);
@@ -232,10 +234,11 @@ int listenToClient_interactive(int client_fd, unsigned char *buffer)
 //-----------------------------------------------------------------------------
 // Process client's commands for the interactive server
 //-----------------------------------------------------------------------------
-void processCommand(unsigned char *buffer, int client_fd)
+void processCommand(char *buffer, int client_fd)
 {
     char log_msg[1200];
     int count_char = 0;
+    printf("PROCESSSESSING COMMAND");
     
     if (processing_command)
     {
@@ -270,7 +273,7 @@ void processCommand(unsigned char *buffer, int client_fd)
     {
         processing_command = true;
         char *argument;
-        argument = (char)readCommandArgumentStr(buffer);
+        argument = (char*)readCommandArgumentStr(buffer);
         strcpy(ethercat_conf_file, argument);
         free(argument);
         sprintf(log_msg, "Issued start_ethercat() command to start with config: %s\n", ethercat_conf_file);
@@ -300,7 +303,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         pthread_create(&modbus_thread, NULL, modbusThread, NULL);
         processing_command = false;
     }
-    else if (strncmp(buffer, "stop_modbus()", 13) == 0)
+    else if (strncmp((const char*)buffer, "stop_modbus()", 13) == 0)
     {
         processing_command = true;
         sprintf(log_msg, "Issued stop_modbus() command\n");
@@ -314,7 +317,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         }
         processing_command = false;
     }
-    else if (strncmp(buffer, "start_dnp3(", 11) == 0)
+    else if (strncmp((const char*)buffer, "start_dnp3(", 11) == 0)
     {
         processing_command = true;
         dnp3_port = readCommandArgument(buffer);
@@ -335,7 +338,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         pthread_create(&dnp3_thread, NULL, dnp3Thread, NULL);
         processing_command = false;
     }
-    else if (strncmp(buffer, "stop_dnp3()", 11) == 0)
+    else if (strncmp((const char*)buffer, "stop_dnp3()", 11) == 0)
     {
         processing_command = true;
         sprintf(log_msg, "Issued stop_dnp3() command\n");
@@ -349,7 +352,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         }
         processing_command = false;
     }
-    else if (strncmp(buffer, "start_enip(", 11) == 0)
+    else if (strncmp((const char*)buffer, "start_enip(", 11) == 0)
     {
         processing_command = true;
         enip_port = readCommandArgument(buffer);
@@ -370,7 +373,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         pthread_create(&enip_thread, NULL, enipThread, NULL);
         processing_command = false;
     }
-    else if (strncmp(buffer, "stop_enip()", 11) == 0)
+    else if (strncmp((const char*)buffer, "stop_enip()", 11) == 0)
     {
         processing_command = true;
         sprintf(log_msg, "Issued stop_enip() command\n");
@@ -384,7 +387,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         }
         processing_command = false;
     }
-    else if (strncmp(buffer, "start_pstorage(", 15) == 0)
+    else if (strncmp((const char*)buffer, "start_pstorage(", 15) == 0)
     {
         processing_command = true;
         pstorage_polling = readCommandArgument(buffer);
@@ -400,7 +403,7 @@ void processCommand(unsigned char *buffer, int client_fd)
         pthread_create(&pstorage_thread, NULL, pstorageThread, NULL);
         processing_command = false;
     }
-    else if (strncmp(buffer, "stop_pstorage()", 15) == 0)
+    else if (strncmp((const char*)buffer, "stop_pstorage()", 15) == 0)
     {
         processing_command = true;
         sprintf(log_msg, "Issued stop_pstorage() command\n");
@@ -421,11 +424,11 @@ void processCommand(unsigned char *buffer, int client_fd)
         processing_command = false;
         return;
     }
-    else if (strncmp(buffer, "exec_time()", 11) == 0)
+    else if (strncmp((const char*)buffer, "exec_time()", 11) == 0)
     {
         processing_command = true;
         time(&end_time);
-        count_char = sprintf(buffer, "%llu\n", (unsigned long long)difftime(end_time, start_time));
+        count_char = sprintf((char*)buffer, "%llu\n", (unsigned long long)difftime(end_time, start_time));
         write(client_fd, buffer, count_char);
         processing_command = false;
         return;
@@ -433,20 +436,20 @@ void processCommand(unsigned char *buffer, int client_fd)
     else
     {
         processing_command = true;
-        count_char = sprintf(buffer, "Error: unrecognized command\n");
+        count_char = sprintf((char*)buffer, "Error: unrecognized command\n");
         write(client_fd, buffer, count_char);
         processing_command = false;
         return;
     }
     
-    count_char = sprintf(buffer, "OK\n");
+    count_char = sprintf((char*)buffer, "OK\n");
     write(client_fd, buffer, count_char);
 }
 
 //-----------------------------------------------------------------------------
 // Process client's request
 //-----------------------------------------------------------------------------
-void processMessage_interactive(unsigned char *buffer, int bufferSize, int client_fd)
+void processMessage_interactive(char *buffer, int bufferSize, int client_fd)
 {
     for (int i = 0; i < bufferSize; i++)
     {
@@ -468,16 +471,14 @@ void processMessage_interactive(unsigned char *buffer, int bufferSize, int clien
 void *handleConnections_interactive(void *arguments)
 {
     int client_fd = *(int *)arguments;
-    unsigned char buffer[1024];
+    char buffer[1024];
     int messageSize;
-
     printf("Interactive Server: Thread created for client ID: %d\n", client_fd);
 
     while(run_openplc)
     {
         //unsigned char buffer[1024];
         //int messageSize;
-
         messageSize = listenToClient_interactive(client_fd, buffer);
         if (messageSize <= 0 || messageSize > 1024)
         {
@@ -492,12 +493,13 @@ void *handleConnections_interactive(void *arguments)
             }
             break;
         }
-
+        printf("CLIENT COMMAND %s\n",buffer);
         processMessage_interactive(buffer, messageSize, client_fd);
     }
     //printf("Debug: Closing client socket and calling pthread_exit in interactive_server.cpp\n");
     closeSocket(client_fd);
     printf("Terminating interactive server connections\r\n");
+    free(arguments);
     pthread_exit(NULL);
 }
 
@@ -524,15 +526,19 @@ void startInteractiveServer(int port)
         else
         {
             int arguments[1];
+            int* args = (int*)malloc(sizeof(int));
+            *args = client_fd;
             pthread_t thread;
             int ret = -1;
 
             printf("Interactive Server: Client accepted! Creating thread for the new client ID: %d...\n", client_fd);
             arguments[0] = client_fd;
-            ret = pthread_create(&thread, NULL, handleConnections_interactive, arguments);
+            std::cout << "CLIENT ID: " << client_fd << " " << *args << "\n";
+            ret = pthread_create(&thread, NULL, handleConnections_interactive, args);
             if (ret==0) 
             {
                 pthread_detach(thread);
+                //free(args);
             }
         }
     }

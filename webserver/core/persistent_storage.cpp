@@ -190,7 +190,7 @@ int readPersistentStorage()
             pthread_mutex_unlock(&bufferLock); //unlock mutex
             fclose(file);
             pstorage_read = true;
-            return;
+            return 0;
         }
         
         // Only assign if value is non-zero
@@ -199,7 +199,7 @@ int readPersistentStorage()
             // Allocate memory if the pointer is NULL
             if (int_memory[i] == NULL) 
             {
-                int_memory[i] = malloc(sizeof(uint16_t));
+                int_memory[i] = (IEC_UINT*)(sizeof(uint16_t));
                 if (int_memory[i] == NULL) 
                 {
                     sprintf(log_msg, "Error allocating memory for int_memory[%d]", i);
@@ -224,7 +224,7 @@ int readPersistentStorage()
             pthread_mutex_unlock(&bufferLock); //unlock mutex
             fclose(file);
             pstorage_read = true;
-            return;
+            return 0;
         }
         
         // Only assign if value is non-zero
@@ -233,7 +233,7 @@ int readPersistentStorage()
             // Allocate memory if the pointer is NULL
             if (dint_memory[i] == NULL) 
             {
-                dint_memory[i] = malloc(sizeof(uint32_t));
+                dint_memory[i] = (IEC_UDINT*)malloc(sizeof(uint32_t));
                 if (dint_memory[i] == NULL) 
                 {
                     sprintf(log_msg, "Error allocating memory for dint_memory[%d]", i);
@@ -258,7 +258,7 @@ int readPersistentStorage()
             pthread_mutex_unlock(&bufferLock); //unlock mutex
             fclose(file);
             pstorage_read = true;
-            return;
+            return 0;
         }
         
         // Only assign if value is non-zero
@@ -267,7 +267,7 @@ int readPersistentStorage()
             // Allocate memory if the pointer is NULL
             if (lint_memory[i] == NULL) 
             {
-                lint_memory[i] = malloc(sizeof(uint64_t));
+                lint_memory[i] = (IEC_ULINT*)malloc(sizeof(uint64_t));
                 if (lint_memory[i] == NULL) 
                 {
                     sprintf(log_msg, "Error allocating memory for lint_memory[%d]", i);

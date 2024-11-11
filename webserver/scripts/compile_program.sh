@@ -64,7 +64,8 @@ if [ "$OPENPLC_PLATFORM" = "win" ]; then
     echo "Generating glueVars..."
     ./glue_generator
     echo "Compiling main program..."
-    g++ *.cpp *.o -o openplc -I ./lib -pthread -fpermissive -I /usr/local/include/modbus -L /usr/local/lib -lmodbus -w
+    #g++ *.cpp *.o -o openplc -I ./lib -pthread -fpermissive -I /usr/local/include/modbus -L /usr/local/lib -lmodbus -w
+    afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare   -I ./lib -pthread -fpermissive -I /usr/local/include/modbus -L /usr/local/lib -lmodbus -w
     if [ $? -ne 0 ]; then
         echo "Error compiling C files"
         echo "Compilation finished with errors!"
@@ -77,9 +78,11 @@ elif [ "$OPENPLC_PLATFORM" = "linux" ]; then
     echo "Compiling for Linux"
     echo "Generating object files..."
     if [ "$OPENPLC_DRIVER" = "sl_rp4" ]; then
-        g++ -std=gnu++11 -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w -DSL_RP4
+        #g++ -std=gnu++11 -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w -DSL_RP4
+        afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w -DSL_RP4
     else
-        g++ -std=gnu++11 -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w
+        #g++ -std=gnu++11 -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w
+        afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w 
     fi
     if [ $? -ne 0 ]; then
         echo "Error compiling C files"
@@ -87,9 +90,11 @@ elif [ "$OPENPLC_PLATFORM" = "linux" ]; then
         exit 1
     fi
     if [ "$OPENPLC_DRIVER" = "sl_rp4" ]; then
-        g++ -std=gnu++11 -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
+        #g++ -std=gnu++11 -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
+        afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-c++11-narrowing -Wno-everything -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
     else
-        g++ -std=gnu++11 -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
+        #g++ -std=gnu++11 -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
+        afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-everything -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
     fi
     if [ $? -ne 0 ]; then
         echo "Error compiling C files"
@@ -100,9 +105,11 @@ elif [ "$OPENPLC_PLATFORM" = "linux" ]; then
     ./glue_generator
     echo "Compiling main program..."
     if [ "$OPENPLC_DRIVER" = "sl_rp4" ]; then
-        g++ -std=gnu++11 *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
+        #g++ -std=gnu++11 *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
+        afl-clang-fast++ -std=gnu++11 -fpermissive -fms-extensions -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC -DSL_RP4
     else
-        g++ -std=gnu++11 *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
+        #g++ -std=gnu++11 *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
+        afl-clang-fast++ -std=gnu++11 -fpermissive -fms-extensions -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare *.cpp *.o -o openplc -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
     fi
     if [ $? -ne 0 ]; then
         echo "Error compiling C files"

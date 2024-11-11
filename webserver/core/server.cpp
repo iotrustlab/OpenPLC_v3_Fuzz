@@ -112,6 +112,7 @@ int createSocket(uint16_t port)
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
 
+    printf("BINDING SOCKET, : %d\n" ,socket_fd);
     //Bind socket
     if (bind(socket_fd,(struct sockaddr *)&server_addr,sizeof(server_addr)) < 0)
     {
@@ -178,7 +179,7 @@ int listenToClient(int client_fd, unsigned char *buffer)
 //-----------------------------------------------------------------------------
 // Process client's request
 //-----------------------------------------------------------------------------
-void processMessage(unsigned char *buffer, int bufferSize, int client_fd, int protocol_type)
+void processMessage(unsigned char *buffer, uint16_t bufferSize, int client_fd, int protocol_type)
 {
     if (protocol_type == MODBUS_PROTOCOL)
     {

@@ -59,7 +59,7 @@ int connect_to_tcp_server(uint8_t *ip_address, uint16_t port, int method)
     
     //Configure socket
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(ip_address);
+    servaddr.sin_addr.s_addr = inet_addr((const char*)ip_address);
     servaddr.sin_port = htons(port);
     
     //Connect to server

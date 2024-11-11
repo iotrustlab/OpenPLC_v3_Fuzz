@@ -169,7 +169,7 @@ void parseConfig()
                     getData(line_str, temp_buffer, '"', '"');
                     num_devices = atoi(temp_buffer);
                     //initializes the allocated memory to zero
-                    mb_devices = calloc(num_devices, sizeof(struct MB_device));
+                    mb_devices = (MB_device*)calloc(num_devices, sizeof(struct MB_device));
                 }
                 else if (!strncmp(line_str, "Polling_Period", 14))
                 {

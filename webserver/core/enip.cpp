@@ -510,7 +510,7 @@ int sendUnitData(struct enip_header *header, struct enip_data_Connected_0x70 *en
 // response for it. The return value is the size of the response message in
 // bytes.
 //-----------------------------------------------------------------------------
-int processEnipMessage(unsigned char *buffer, int buffer_size)
+int processEnipMessage(unsigned char *buffer, uint16_t buffer_size)
 {	
     // initialize logging system
     const int log_msg_max_size = 1000;
@@ -586,7 +586,7 @@ int processEnipMessage(unsigned char *buffer, int buffer_size)
     }*/
     else
     {
-        p = sprintf(p, "Unknown EtherNet/IP request: ");
+        p = (char*)sprintf(p, "Unknown EtherNet/IP request: ");
         int msg_size;
         if (((buffer_size * 3) + 40) < log_msg_max_size) // Each byte on buffer takes 3 bytes to be printed using "%02x ". Add 40 extra bytes for "preamble"
         {
