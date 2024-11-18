@@ -170,6 +170,13 @@ class runtime:
             # Start compilation
             a = subprocess.Popen(['./scripts/compile_program.sh', str(st_file)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             compilation_object = NonBlockingStreamReader(a.stdout)
+
+    def fuzz_program(self):
+        global fuzzing_status_str
+        global fuzzing_object
+        fuzzing_status_str = ""
+        a = subprocess.Popen(['./scripts/fuzz_program.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        fuzzing_object = NonBlockingStreamReader(a.stdout)
     
     def compilation_status(self):
         global compilation_status_str
@@ -179,6 +186,15 @@ class runtime:
             if not line: break
             compilation_status_str += line
         return compilation_status_str
+    
+    def fuzzing_status(self):
+        global fuzzing_status_str
+        global fuzzing_object
+        while fuzzing_object != None:
+            line = fuzzing_object.readline()
+            if not line: break
+            fuzzing_status_str += line
+        return fuzzing_status_str
 
     def status(self):
         if ('compilation_object' in globals()):

@@ -77,6 +77,7 @@ if [ "$OPENPLC_PLATFORM" = "win" ]; then
 elif [ "$OPENPLC_PLATFORM" = "linux" ]; then
     echo "Compiling for Linux"
     echo "Generating object files..."
+    export AFL_LLVM_ALLOWLIST=../fuzzing/allowlist.txt
     if [ "$OPENPLC_DRIVER" = "sl_rp4" ]; then
         #g++ -std=gnu++11 -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w -DSL_RP4
         afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w -DSL_RP4

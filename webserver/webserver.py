@@ -349,6 +349,128 @@ loading logs...
 </html>"""
     return return_str
 
+
+def draw_fuzzing_page():
+    return_str = draw_blank_page()
+    return_str += """
+                    <h2>Fuzzing program</h2>
+                    <textarea id='mytextarea' style='height:500px; resize:vertical'>
+loading logs...
+                    </textarea>
+                    <br><br><center><a href='dashboard' id='dashboard_button' class='button' style='background-color: #EDEDED; pointer-events: none; width: 310px; height: 53px; margin: 0px 20px 0px 20px;'><b>Go to Dashboard</b></a></center>
+                </div>
+            </div>
+        </div>
+    </body>
+    
+    <script>
+        (function (global)
+        {
+            if(typeof (global) === "undefined")
+            {
+                throw new Error("window is undefined");
+            }
+            
+            var _hash = "!";
+            var noBackPlease = function () 
+            {
+                global.location.href += "#";
+
+                // making sure we have the fruit available for juice....
+                // 50 milliseconds for just once do not cost much (^__^)
+                global.setTimeout(function () 
+                {
+                    global.location.href += "!";
+                }, 50);
+            };
+            
+            // Earlier we had setInerval here....
+            global.onhashchange = function () 
+            {
+                if (global.location.hash !== _hash) 
+                {
+                    global.location.hash = _hash;
+                }
+            };
+
+            global.onload = function () 
+            {
+                loadData();
+                noBackPlease();
+                
+                // disables backspace on page except on input fields and textarea..
+                document.body.onkeydown = function (e) 
+                {
+                    var elm = e.target.nodeName.toLowerCase();
+                    if (e.which === 8 && (elm !== 'input' && elm  !== 'textarea')) 
+                    {
+                        e.preventDefault();
+                    }
+                    // stopping event bubbling up the DOM tree..
+                    e.stopPropagation();
+                };
+            };
+        })(window);
+        
+        var req;
+        
+        function loadData()
+        {
+            url = 'fuzzing-logs'
+            try
+            {
+                req = new XMLHttpRequest();
+            } catch (e) 
+            {
+                try
+                {
+                    req = new ActiveXObject('Msxml2.XMLHTTP');
+                } catch (e) 
+                {
+                    try 
+                    {
+                        req = new ActiveXObject('Microsoft.XMLHTTP');
+                    } catch (oc) 
+                    {
+                        alert('No AJAX Support');
+                        return;
+                    }
+                }
+            }
+            
+            req.onreadystatechange = processReqChange;
+            req.open('GET', url, true);
+            req.send(null);
+        }
+        
+        function processReqChange()
+        {
+            //If req shows 'complete'
+            if (req.readyState == 4)
+            {
+                fuzzing_logs = document.getElementById('mytextarea');
+                dashboard_button = document.getElementById('dashboard_button');
+                
+                //If 'OK'
+                if (req.status == 200)
+                {
+                    //Update textarea text
+                    fuzzing_logs.value = req.responseText;
+                    
+                    //Start a new update timer
+                    timeoutID = setTimeout('loadData()', 1000);
+                    dashboard_button.style.background='#0066FC'
+                    dashboard_button.style.pointerEvents='auto'
+                }
+                else
+                {
+                    fuzzing_logs.value = 'There was a problem retrieving the logs. Error: ' + req.statusText;
+                }
+            }
+        }
+    </script>
+</html>"""
+    return return_str
     
 @login_manager.user_loader
 def user_loader(username):
@@ -521,6 +643,7 @@ def dashboard():
                     <a href='hardware' class='w3-bar-item w3-button'><img src='/static/hardware-icon-980x974.png' alt='Hardware' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Hardware</p></a>
                     <a href='users' class='w3-bar-item w3-button'><img src='/static/users-icon-64x64.png' alt='Users' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Users</p></a>
                     <a href='settings' class='w3-bar-item w3-button'><img src='/static/settings-icon-64x64.png' alt='Settings' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Settings</p></a>
+                    <a href='fuzzing' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>
                     <a href='logout' class='w3-bar-item w3-button'><img src='/static/logout-icon-64x64.png' alt='Logout' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Logout</p></a>
                     <br>
                     <br>"""
@@ -546,6 +669,45 @@ def dashboard():
         
         return return_str
 
+@app.route('/fuzzing')
+def fuzzing():
+    global openplc_runtime
+    if (flask_login.current_user.is_authenticated == False):
+        return flask.redirect(flask.url_for('login'))
+    else:
+        monitor.stop_monitor()
+        #if (openplc_runtime.status() == "Compiling"): return draw_compiling_page()
+        return_str = pages.w3_style + pages.dashboard_head + draw_top_div()
+        return_str += """
+            <div class='main'>
+                <div class='w3-sidebar w3-bar-block' style='width:250px; background-color:#1F1F1F'>
+                    <br>
+                    <br>
+                    <a href='dashboard' class='w3-bar-item w3-button' style='background-color:#0066FC; padding-right:0px;padding-top:0px;padding-bottom:0px'><img src='/static/home-icon-64x64.png' alt='Dashboard' style='width:47px;height:39px;padding:7px 15px 0px 0px;float:left'><img src='/static/arrow.png' style='width:17px;height:49px;padding:0px 0px 0px 0px;margin: 0px 0px 0px 0px; float:right'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 10px 0px 0px 0px'>Dashboard</p></a>
+                    <a href='programs' class='w3-bar-item w3-button'><img src='/static/programs-icon-64x64.png' alt='Programs' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Programs</p></a>
+                    <a href='modbus' class='w3-bar-item w3-button'><img src='/static/modbus-icon-512x512.png' alt='Modbus' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Slave Devices</p></a>
+                    <a href='monitoring' class='w3-bar-item w3-button'><img src='/static/monitoring-icon-64x64.png' alt='Monitoring' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Monitoring</p></a>
+                    <a href='hardware' class='w3-bar-item w3-button'><img src='/static/hardware-icon-980x974.png' alt='Hardware' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Hardware</p></a>
+                    <a href='users' class='w3-bar-item w3-button'><img src='/static/users-icon-64x64.png' alt='Users' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Users</p></a>
+                    <a href='settings' class='w3-bar-item w3-button'><img src='/static/settings-icon-64x64.png' alt='Settings' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Settings</p></a>
+                    <a href='fuzzing' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>
+                    <a href='logout' class='w3-bar-item w3-button'><img src='/static/logout-icon-64x64.png' alt='Logout' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Logout</p></a>
+                    <br>
+                    <br>"""
+        return_str += draw_status()
+        return_str += """
+        </div>
+                <div style='margin-left:320px'>
+                    <div style='w3-container'>
+                        <br>
+                        <h2>Dashboard</h2>
+                        <p style='font-family:'Roboto', sans-serif; font-size:16px'><b>Status: """
+            
+        #return_str += "  <div <br><a href='fuzz_program' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>>"
+        return_str += "<br><br><center><a href='fuzz_program' id='fuzz_program' class='button' style='background-color: #0066FC; pointer-events: auto; width: 310px; height: 53px; margin: 0px 20px 0px 20px;'><b>Begin Fuzzing!!</b></a></center>"
+        return return_str
+
+
 
 @app.route('/programs', methods=['GET', 'POST'])
 def programs():
@@ -570,6 +732,7 @@ def programs():
                     <a href='hardware' class='w3-bar-item w3-button'><img src='/static/hardware-icon-980x974.png' alt='Hardware' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Hardware</p></a>
                     <a href='users' class='w3-bar-item w3-button'><img src='/static/users-icon-64x64.png' alt='Users' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Users</p></a>
                     <a href='settings' class='w3-bar-item w3-button'><img src='/static/settings-icon-64x64.png' alt='Settings' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Settings</p></a>
+                    <a href='fuzzing' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>
                     <a href='logout' class='w3-bar-item w3-button'><img src='/static/logout-icon-64x64.png' alt='Logout' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Logout</p></a>
                     <br>
                     <br>"""
@@ -650,6 +813,7 @@ def reload_program():
                     <a href='hardware' class='w3-bar-item w3-button'><img src='/static/hardware-icon-980x974.png' alt='Hardware' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Hardware</p></a>
                     <a href='users' class='w3-bar-item w3-button'><img src='/static/users-icon-64x64.png' alt='Users' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Users</p></a>
                     <a href='settings' class='w3-bar-item w3-button'><img src='/static/settings-icon-64x64.png' alt='Settings' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Settings</p></a>
+                    <a href='fuzzing' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>
                     <a href='logout' class='w3-bar-item w3-button'><img src='/static/logout-icon-64x64.png' alt='Logout' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Logout</p></a>
                     <br>
                     <br>"""
@@ -712,6 +876,7 @@ def update_program():
                     <a href='hardware' class='w3-bar-item w3-button'><img src='/static/hardware-icon-980x974.png' alt='Hardware' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Hardware</p></a>
                     <a href='users' class='w3-bar-item w3-button'><img src='/static/users-icon-64x64.png' alt='Users' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Users</p></a>
                     <a href='settings' class='w3-bar-item w3-button'><img src='/static/settings-icon-64x64.png' alt='Settings' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Settings</p></a>
+                    <a href='fuzzing' class='w3-bar-item w3-button'><img src='/static/fuzzy.png' alt='Fuzzing!!!!!!!!!' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Fuzzing</p></a>
                     <a href='logout' class='w3-bar-item w3-button'><img src='/static/logout-icon-64x64.png' alt='Logout' style='width:47px;height:32px;padding:0px 15px 0px 0px;float:left'><p style='font-family:\"Roboto\", sans-serif; font-size:20px; color:white;margin: 2px 0px 0px 0px'>Logout</p></a>
                     <br>
                     <br>"""
@@ -947,6 +1112,16 @@ def compile_program():
         
         return draw_compiling_page()
 
+@app.route('/fuzz_program', methods=['GET', 'POST'])
+def fuzz_program():
+    global openplc_runtime
+    if (flask_login.current_user.is_authenticated == False):
+        return flask.redirect(flask.url_for('login'))
+    # else:
+    #     if (openplc_runtime.status() == "Fuzzing"): return draw_compiling_page()
+    openplc_runtime.fuzz_program()
+    return draw_fuzzing_page()
+
 
 @app.route('/compilation-logs', methods=['GET', 'POST'])
 def compilation_logs():
@@ -954,6 +1129,13 @@ def compilation_logs():
         return flask.redirect(flask.url_for('login'))
     else:
         return openplc_runtime.compilation_status()
+
+@app.route('/fuzzing-logs', methods=['GET', 'POST'])
+def fuzzing_logs():
+    if (flask_login.current_user.is_authenticated == False):
+        return flask.redirect(flask.url_for('login'))
+    else:
+        return openplc_runtime.fuzzing_status()
 
 
 @app.route('/modbus', methods=['GET', 'POST'])
