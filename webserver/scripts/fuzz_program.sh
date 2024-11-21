@@ -6,6 +6,7 @@ echo "Configuring AFL++ for current system"
 
 echo "Setting up intput corpus"
 #setup inputs corpus
+export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
 afl-cmin -i ../fuzzing/INPUTS -o INPUTS_UNIQUE -- ../core/openplc -someopt @@
 
 
@@ -13,7 +14,7 @@ afl-cmin -i ../fuzzing/INPUTS -o INPUTS_UNIQUE -- ../core/openplc -someopt @@
 # mkdir input
 # cd INPUTS_UNIQUE
 # for i in *; do
-#   afl-tmin -i "$i" -o "../input/$i" -- bin/target -someopt @@
+#   afl-tmin -i "$i" -o "../input/$i" -- ../core/openplc -someopt @@
 # done
 echo "Begin Fuzzing"
-afl-fuzz -i ../fuzzing/INPUTS -o output -- ../core/openplc -someopt @@
+afl-fuzz -i ../fuzzing/INPUTS -o ../fuzzing/fuzz_output -- ../core/openplc -someopt @@
