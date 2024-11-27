@@ -1,6 +1,6 @@
 #!/bin/bash
 #compiling the ST file into C
-cd ..
+cd ../..
 echo "Generating C files..."
 ./iec2c -f -l -p -r -R -a ./st_files/"328551.st"
 if [ $? -ne 0 ]; then
@@ -19,19 +19,9 @@ fi
 
 cd fuzzing/harnessing/PLC_harness
 
-afl-clang-fast++ -I ./lib -c Config0.c -w
-if [ $? -ne 0 ]; then
-    echo "Error compiling C files"
-    echo "Compilation finished with errors!"
-    exit 1
-fi
-afl-clang-fast++ -I ./lib -c Res0.c -w
-if [ $? -ne 0 ]; then
-    echo "Error compiling C files"
-    echo "Compilation finished with errors!"
-    exit 1
-fi
-
-afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w 
-afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-everything -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
-afl-clang-fast++ -std=gnu++11 -fpermissive -fms-extensions -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare Config0.o Res0.o -o plc_harness -I ./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w $ETHERCAT_INC
+echo "Generating glueVars..."
+./glue_generator
+#export AFL_LLVM_ALLOWLIST=../allowlist.txt
+afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ../../../core/./lib -c Config0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w 
+afl-clang-fast++ -std=gnu++11 -fpermissive -Wno-error -Wno-c++11-narrowing -Wno-everything -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare -I ../../../core/./lib -c Res0.c -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w
+afl-clang-fast++ -std=gnu++11 -fpermissive -fms-extensions -Wno-c++11-narrowing -Wno-pointer-sign -Wno-incompatible-pointer-types -Wno-int-to-pointer-cast -Wno-cast-align -Wno-non-literal-null-conversion -Wno-unused-variable -Wno-sign-compare *.cpp *.o -o plc_harness -I ../../../core/./lib -pthread -fpermissive `pkg-config --cflags --libs libmodbus` -lasiodnp3 -lasiopal -lopendnp3 -lopenpal -w

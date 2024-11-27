@@ -2,11 +2,6 @@
 
 extern PLC2 RES0__INSTANCE0;
 
-void save_plc_to_file()
-{
-    serialize_plc_data("plc_data.bin");
-}
-
 void serialize_plc_data(const char *filename)
 {
     FILE *file = fopen(filename, "ab+");
@@ -15,6 +10,11 @@ void serialize_plc_data(const char *filename)
         fwrite(&RES0__INSTANCE0, sizeof(PLC2), 1, file);
         fclose(file);
     }
+}
+
+void save_plc_to_file()
+{
+    serialize_plc_data("plc_data.bin");
 }
 
 int deserialize_plc_data(const char *filename)
@@ -40,5 +40,5 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    deserialize_plc_data(argv[1]);
+    return deserialize_plc_data(argv[1]);
 }
