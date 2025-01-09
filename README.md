@@ -28,6 +28,20 @@ Where `[platform]` can be:
 
 `custom` - Skip all specific package installation and tries to install OpenPLC assuming your system already has all dependencies met. This option can be useful if you're trying to install OpenPLC on an unsuported Linux platform or had manually installed all the dependency packages before.
 
+## Fuzzing:
+The current fuzzing instrumentation uses AFL++ on linux machines. This will require installing the AFL++ toolset on the current
+machine. These instructions can be found here: https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/INSTALL.md
+
+The AFL++ fuzzer can be run on the sample plc2.st file by running this commands
+ `./fuzzing/scripts/compile_fuzzing.sh`
+`./fuzzing/scripts/fuzz_input.sh`
+The input corpus can be modified in the INPUTS folder.
+
+The fuzzer can be ran client side throught the web browser, however this will cause issues with the state tracking of the 
+runtime, and the output formatting by afl++ will be lost in the log collection through the web browser.
+So it is reccomended to run it server side through the command line.
+
+
 ### Building, Installing and Running inside Docker
 When using Ubuntu: make sure [`docker for Ubuntu` is installed](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
