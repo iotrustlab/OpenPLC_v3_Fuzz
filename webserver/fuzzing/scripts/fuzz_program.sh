@@ -1,13 +1,14 @@
 #!/bin/bash
-cd core
+cd fuzzing/scripts
 echo "Configuring AFL++ for current system"
 #sudo afl-system-config
 
 
 echo "Setting up intput corpus"
+rm -r ../INPUTS/INPUTS_UNIQUE
 #setup inputs corpus
 export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
-afl-cmin -i ../INPUTS -o ../INPUTS/INPUTS_UNIQUE -- ../harnessing/PLC_harness/plc_harness -someopt @@
+afl-cmin -i ../INPUTS -o ../INPUTS/INPUTS_UNIQUE -- ../PLC_harness/plc_harness -someopt @@
 
 
 #rather optional scirpt to minimize input files for AFL++
@@ -16,5 +17,6 @@ afl-cmin -i ../INPUTS -o ../INPUTS/INPUTS_UNIQUE -- ../harnessing/PLC_harness/pl
 # for i in *; do
 #   afl-tmin -i "$i" -o "../input/$i" -- ../core/openplc -someopt @@
 # done
+
 echo "Begin Fuzzing"
-afl-fuzz -i ../INPUTS -o ../fuzz_output -- ../harnessing/PLC_harness/plc_harness -someopt @@
+afl-fuzz -i ../INPUTS -o ../fuzz_output -- ../PLC_Harness/plc_harness ../INPUTS/inputs.txt -someopt @@

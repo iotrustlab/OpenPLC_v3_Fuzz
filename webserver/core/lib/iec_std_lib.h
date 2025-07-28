@@ -277,16 +277,16 @@ static const unsigned short int __mon_yday[2][13] =
 };
 
 typedef struct {
-	int tm_sec;			/* Seconds.	[0-60] (1 leap second) */
-	int tm_min;			/* Minutes.	[0-59] */
-	int tm_hour;			/* Hours.	[0-23] */
-	int tm_day;			/* Day.		[1-31] */
-	int tm_mon;			/* Month.	[0-11] */
-	int tm_year;			/* Year	*/
-} tm;
+	int iec_tm_sec;			/* Seconds.	[0-60] (1 leap second) */
+	int iec_tm_min;			/* Minutes.	[0-59] */
+	int iec_tm_hour;			/* Hours.	[0-23] */
+	int iec_tm_day;			/* Day.		[1-31] */
+	int iec_tm_mon;			/* Month.	[0-11] */
+	int iec_tm_year;			/* Year	*/
+} iec_tm;
 
-static inline tm convert_seconds_to_date_and_time(long int seconds) {
-  tm dt;
+static inline iec_tm convert_seconds_to_date_and_time(long int seconds) {
+  iec_tm dt;
   long int days, rem;
   days = seconds / SECONDS_PER_DAY;
   rem = seconds % SECONDS_PER_DAY;
@@ -296,26 +296,26 @@ static inline tm convert_seconds_to_date_and_time(long int seconds) {
   }
 
   // time of day
-  dt.tm_hour = rem / SECONDS_PER_HOUR;
+  dt.iec_tm_hour = rem / SECONDS_PER_HOUR;
   rem %= SECONDS_PER_HOUR;
-  dt.tm_min = rem / 60;
-  dt.tm_sec = rem % 60;
+  dt.iec_tm_min = rem / 60;
+  dt.iec_tm_sec = rem % 60;
 
   // date
-  dt.tm_year = EPOCH_YEAR;
-  while (days >= (rem = __isleap(dt.tm_year) ? 366 : 365)) {
-	  dt.tm_year++;
+  dt.iec_tm_year = EPOCH_YEAR;
+  while (days >= (rem = __isleap(dt.iec_tm_year) ? 366 : 365)) {
+	  dt.iec_tm_year++;
 	  days -= rem;
   }
   while (days < 0) {
-	  dt.tm_year--;
-	  days += __isleap(dt.tm_year) ? 366 : 365;
+	  dt.iec_tm_year--;
+	  days += __isleap(dt.iec_tm_year) ? 366 : 365;
   }
-  dt.tm_mon = 1;
-  while (days > __mon_yday[__isleap(dt.tm_year)][dt.tm_mon]) {
-	  dt.tm_mon += 1;
+  dt.iec_tm_mon = 1;
+  while (days > __mon_yday[__isleap(dt.iec_tm_year)][dt.iec_tm_mon]) {
+	  dt.iec_tm_mon += 1;
   }
-  dt.tm_day = days - __mon_yday[__isleap(dt.tm_year)][dt.tm_mon - 1] + 1;
+  dt.iec_tm_day = days - __mon_yday[__isleap(dt.iec_tm_year)][dt.iec_tm_mon - 1] + 1;
 
   return dt;
 }
@@ -610,20 +610,20 @@ static inline STRING __time_to_string(TIME IN){
 }
 static inline STRING __date_to_string(DATE IN){
     STRING res;
-    tm broken_down_time;
+    iec_tm broken_down_time;
     /* D#1984-06-25 */
     broken_down_time = convert_seconds_to_date_and_time(IN.tv_sec);
     res = __INIT_STRING;
     res.len = snprintf((char*)&res.body, STR_MAX_LEN, "D#%d-%2.2d-%2.2d",
-             broken_down_time.tm_year,
-             broken_down_time.tm_mon,
-             broken_down_time.tm_day);
+             broken_down_time.iec_tm_year,
+             broken_down_time.iec_tm_mon,
+             broken_down_time.iec_tm_day);
     if(res.len > STR_MAX_LEN) res.len = STR_MAX_LEN;
     return res;
 }
 static inline STRING __tod_to_string(TOD IN){
     STRING res;
-    tm broken_down_time;
+    iec_tm broken_down_time;
     time_t seconds;
     /* TOD#15:36:55.36 */
     seconds = IN.tv_sec;
@@ -635,39 +635,39 @@ static inline STRING __tod_to_string(TOD IN){
     res = __INIT_STRING;
     if(IN.tv_nsec == 0){
         res.len = snprintf((char*)&res.body, STR_MAX_LEN, "TOD#%2.2d:%2.2d:%2.2d",
-                 broken_down_time.tm_hour,
-                 broken_down_time.tm_min,
-                 broken_down_time.tm_sec);
+                 broken_down_time.iec_tm_hour,
+                 broken_down_time.iec_tm_min,
+                 broken_down_time.iec_tm_sec);
     }else{
         res.len = snprintf((char*)&res.body, STR_MAX_LEN, "TOD#%2.2d:%2.2d:%09.6f",
-                 broken_down_time.tm_hour,
-                 broken_down_time.tm_min,
-                 (LREAL)broken_down_time.tm_sec + (LREAL)IN.tv_nsec / 1e9);
+                 broken_down_time.iec_tm_hour,
+                 broken_down_time.iec_tm_min,
+                 (LREAL)broken_down_time.iec_tm_sec + (LREAL)IN.tv_nsec / 1e9);
     }
     if(res.len > STR_MAX_LEN) res.len = STR_MAX_LEN;
     return res;
 }
 static inline STRING __dt_to_string(DT IN){
     STRING res;
-    tm broken_down_time;
+    iec_tm broken_down_time;
     /* DT#1984-06-25-15:36:55.36 */
     broken_down_time = convert_seconds_to_date_and_time(IN.tv_sec);
     if(IN.tv_nsec == 0){
         res.len = snprintf((char*)&res.body, STR_MAX_LEN, "DT#%d-%2.2d-%2.2d-%2.2d:%2.2d:%2.2d",
-                 broken_down_time.tm_year,
-                 broken_down_time.tm_mon,
-                 broken_down_time.tm_day,
-                 broken_down_time.tm_hour,
-                 broken_down_time.tm_min,
-                 broken_down_time.tm_sec);
+                 broken_down_time.iec_tm_year,
+                 broken_down_time.iec_tm_mon,
+                 broken_down_time.iec_tm_day,
+                 broken_down_time.iec_tm_hour,
+                 broken_down_time.iec_tm_min,
+                 broken_down_time.iec_tm_sec);
     }else{
         res.len = snprintf((char*)&res.body, STR_MAX_LEN, "DT#%d-%2.2d-%2.2d-%2.2d:%2.2d:%09.6f",
-                 broken_down_time.tm_year,
-                 broken_down_time.tm_mon,
-                 broken_down_time.tm_day,
-                 broken_down_time.tm_hour,
-                 broken_down_time.tm_min,
-                 (LREAL)broken_down_time.tm_sec + ((LREAL)IN.tv_nsec / 1e9));
+                 broken_down_time.iec_tm_year,
+                 broken_down_time.iec_tm_mon,
+                 broken_down_time.iec_tm_day,
+                 broken_down_time.iec_tm_hour,
+                 broken_down_time.iec_tm_min,
+                 (LREAL)broken_down_time.iec_tm_sec + ((LREAL)IN.tv_nsec / 1e9));
     }
     if(res.len > STR_MAX_LEN) res.len = STR_MAX_LEN;
     return res;

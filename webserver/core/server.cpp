@@ -31,6 +31,8 @@
 #include <fcntl.h>
 
 #include "ladder.h"
+#include "fuzz_input_generator.h"
+#include <iostream>
 
 #define MAX_INPUT 16
 #define MAX_OUTPUT 16
@@ -186,6 +188,10 @@ void processMessage(unsigned char *buffer, uint16_t bufferSize, int client_fd, i
         int messageSize = processModbusMessage(buffer, bufferSize);
         write(client_fd, buffer, messageSize);
     }
+
+    //uncomment to save plc states to binary file
+    //save_plc_to_file();
+
     else if (protocol_type == ENIP_PROTOCOL)
     {
         int messageSize = processEnipMessage(buffer, bufferSize);

@@ -32,8 +32,7 @@
 
 #include "iec_types.h"
 #include "ladder.h"
-#include "fuzz.h"
-#include "debug.h"
+//#include "fuzz.h"
 #ifdef _ethercat_src
 #include "ethercat_src.h"
 
@@ -199,7 +198,6 @@ int main(int argc,char **argv)
         config_run__(__tick++); // execute plc program logic
         updateBuffersOut_MB(); //update slave devices with data from the output image table
         pthread_mutex_unlock(&bufferLock); //unlock mutex
-        save_plc_to_file();
         updateBuffersOut(); //write output image
         
         updateTime();

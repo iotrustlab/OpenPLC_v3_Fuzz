@@ -175,7 +175,7 @@ class runtime:
         global fuzzing_status_str
         global fuzzing_object
         fuzzing_status_str = ""
-        a = subprocess.Popen(['./scripts/fuzz_program.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        a = subprocess.Popen(['./fuzzing/scripts/fuzz_program.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         fuzzing_object = NonBlockingStreamReader(a.stdout)
     
     def compilation_status(self):

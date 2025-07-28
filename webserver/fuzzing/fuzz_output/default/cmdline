@@ -1,0 +1,4 @@
+../harnessing/PLC2_Harness/plc_harness
+../INPUTS/inputs.txt
+-someopt
+@@
