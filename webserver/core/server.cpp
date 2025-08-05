@@ -31,7 +31,6 @@
 #include <fcntl.h>
 
 #include "ladder.h"
-#include "fuzz_input_generator.h"
 #include <iostream>
 
 #define MAX_INPUT 16
